@@ -2,6 +2,7 @@
 letsencrypt/
 ghost-content/logs/
 ghost-content/data/*.log
+# Note: ghost.db IS tracked to preserve admin users and content across deploys
 
 # Node/yarn caches
 node_modules/
