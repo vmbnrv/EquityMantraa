@@ -9,7 +9,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.httpchallenge=true"
       - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.le.acme.email=your-email@example.com"  # CHANGE THIS
+      - "--certificatesresolvers.le.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -22,15 +22,16 @@ services:
     image: ghost:5-alpine
     depends_on:
       - traefik
+    env_file: .env
     environment:
-      url: https://equitymantraa.com
+      url: ${GHOST_URL:-https://equitymantraa.com}
       database__client: sqlite3
       database__connection__filename: /var/lib/ghost/content/data/ghost.db
       mail__transport: SMTP
-      mail__options__host: smtp.example.com  # CHANGE TO YOUR SMTP
-      mail__options__port: 587
-      mail__options__auth__user: your-smtp-user  # CHANGE THIS
-      mail__options__auth__pass: your-smtp-pass  # CHANGE THIS
+      mail__options__host: ${SMTP_HOST}
+      mail__options__port: ${SMTP_PORT:-587}
+      mail__options__auth__user: ${SMTP_USER}
+      mail__options__auth__pass: ${SMTP_PASS}
     volumes:
       - ./ghost-content:/var/lib/ghost/content
       - ./ghost-content/themes/casper-local:/var/lib/ghost/current/content/themes/casper-custom

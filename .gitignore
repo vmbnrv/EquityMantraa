@@ -7,5 +7,10 @@ ghost-content/data/*.log
 node_modules/
 *.log
 
+# Environment secrets (never commit real credentials)
+.env
+.env.local
+.env.prod
+
 # macOS
 .DS_Store
