@@ -1,0 +1,11 @@
+# Ghost runtime artifacts
+letsencrypt/
+ghost-content/logs/
+ghost-content/data/*.log
+
+# Node/yarn caches
+node_modules/
+*.log
+
+# macOS
+.DS_Store

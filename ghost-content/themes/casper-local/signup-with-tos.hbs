@@ -1,0 +1,193 @@
+{{!< default}}
+<main id="site-main" class="site-main outer">
+  <div class="inner">
+    <article class="post-full">
+      <header class="post-full-header">
+        <h1 class="post-full-title">Join Equity Mantra</h1>
+        <p class="post-full-custom-excerpt">Get real-time stock alerts + comprehensive analysis. Accept terms to get started.</p>
+      </header>
+
+      <section class="post-full-content">
+        <div class="kg-card kg-width-wide">
+          <form id="signup-form" class="signup-form">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" required placeholder="you@example.com" />
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="tos" required />
+                <span>I accept the <a href="/terms/" target="_blank" rel="noopener">Terms &amp; Conditions</a> and understand this is for educational purposes</span>
+              </label>
+            </div>
+
+            <button type="submit" class="submit-btn">Send magic link</button>
+
+            <p id="success" class="notice success" hidden>✓ Check your email for the magic link!</p>
+            <p id="error" class="notice error" hidden></p>
+          </form>
+        </div>
+      </section>
+    </article>
+  </div>
+</main>
+
+<style>
+  .signup-form { 
+    display: grid; 
+    gap: 18px; 
+    max-width: 480px; 
+    margin: 40px auto;
+    padding: 30px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-group label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .form-group input[type="email"] { 
+    padding: 12px 14px; 
+    border: 1px solid #d0d0d0; 
+    border-radius: 6px; 
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input[type="email"]:focus {
+    outline: none;
+    border-color: #15171a;
+    box-shadow: 0 0 0 3px rgba(21, 23, 26, 0.1);
+  }
+
+  .checkbox-group {
+    margin-top: 8px;
+  }
+
+  .checkbox-label { 
+    display: flex; 
+    gap: 10px; 
+    align-items: flex-start;
+    font-size: 0.95rem;
+    color: #555;
+    cursor: pointer;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    margin-top: 2px;
+    cursor: pointer;
+  }
+
+  .checkbox-label a {
+    color: #15171a;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .checkbox-label a:hover {
+    text-decoration: underline;
+  }
+
+  .submit-btn { 
+    padding: 12px 18px; 
+    border: none; 
+    background: #15171a; 
+    color: #fff; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .submit-btn:hover { 
+    background: #23262a; 
+  }
+
+  .submit-btn:active {
+    opacity: 0.9;
+  }
+
+  .notice { 
+    margin: 0; 
+    padding: 12px 14px; 
+    border-radius: 6px; 
+    font-size: 0.95rem; 
+  }
+
+  .notice.success { 
+    background: #e8f5e9; 
+    color: #1b5e20; 
+  }
+
+  .notice.error { 
+    background: #fdecea; 
+    color: #c62828; 
+  }
+
+  @media (max-width: 600px) {
+    .signup-form {
+      padding: 20px;
+    }
+    .checkbox-label {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const form = document.getElementById('signup-form');
+    const tos = document.getElementById('tos');
+    const successEl = document.getElementById('success');
+    const errorEl = document.getElementById('error');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      successEl.hidden = true;
+      errorEl.hidden = true;
+
+      if (!tos.checked) {
+        errorEl.textContent = 'Please accept the Terms & Conditions to continue.';
+        errorEl.hidden = false;
+        return;
+      }
+
+      const email = form.email.value.trim();
+      if (!email) {
+        errorEl.textContent = 'Email is required.';
+        errorEl.hidden = false;
+        return;
+      }
+
+      try {
+        const res = await fetch('/members/api/send-magic-link/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, emailType: 'signup' })
+        });
+
+        if (!res.ok) throw new Error('Request failed');
+
+        successEl.hidden = false;
+        form.reset();
+        tos.checked = false;
+      } catch (err) {
+        console.error('Signup error:', err);
+        errorEl.textContent = 'Could not send magic link. Please try again in a moment.';
+        errorEl.hidden = false;
+      }
+    });
+  })();
+</script>

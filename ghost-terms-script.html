@@ -1,0 +1,146 @@
+<!-- Terms & Conditions Checkbox for Ghost Member Portal -->
+<style>
+  .gh-portal-terms {
+    margin: 15px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .gh-portal-terms input[type="checkbox"] {
+    margin-top: 3px;
+    cursor: pointer;
+  }
+  
+  .gh-portal-terms label {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #15171a;
+    cursor: pointer;
+  }
+  
+  .gh-portal-terms a {
+    color: #667eea;
+    text-decoration: underline;
+  }
+  
+  .gh-portal-terms-error {
+    color: #f50000;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+  }
+</style>
+
+<script>
+(function() {
+  // Wait for Ghost portal to load
+  const waitForPortal = setInterval(() => {
+    const portalFrame = document.querySelector('iframe[data-frame="portal-popup"]');
+    
+    if (portalFrame) {
+      clearInterval(waitForPortal);
+      injectTermsCheckbox(portalFrame);
+      
+      // Watch for portal changes (switching between signin/signup)
+      const observer = new MutationObserver(() => {
+        injectTermsCheckbox(portalFrame);
+      });
+      
+      observer.observe(portalFrame, {
+        attributes: true,
+        childList: true,
+        subtree: true
+      });
+    }
+  }, 500);
+  
+  function injectTermsCheckbox(iframe) {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      
+      // Find the signup/signin form
+      const signupForm = iframeDoc.querySelector('form[data-members-form="signup"]') || 
+                         iframeDoc.querySelector('form');
+      
+      if (!signupForm || signupForm.querySelector('.gh-portal-terms')) {
+        return; // Already injected or form not found
+      }
+      
+      // Find the submit button
+      const submitButton = signupForm.querySelector('button[type="submit"]');
+      if (!submitButton) return;
+      
+      // Create terms checkbox HTML
+      const termsDiv = document.createElement('div');
+      termsDiv.className = 'gh-portal-terms';
+      termsDiv.innerHTML = `
+        <input type="checkbox" id="terms-checkbox" name="terms" required>
+        <label for="terms-checkbox">
+          I agree to the <a href="/terms-and-conditions/" target="_blank">Terms & Conditions</a>
+        </label>
+      `;
+      
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'gh-portal-terms-error';
+      errorDiv.textContent = 'You must accept the Terms & Conditions to continue';
+      
+      // Insert before submit button
+      submitButton.parentNode.insertBefore(termsDiv, submitButton);
+      submitButton.parentNode.insertBefore(errorDiv, submitButton);
+      
+      // Intercept form submission
+      const originalSubmit = submitButton.onclick;
+      submitButton.onclick = function(e) {
+        const checkbox = iframeDoc.getElementById('terms-checkbox');
+        const error = iframeDoc.querySelector('.gh-portal-terms-error');
+        
+        if (!checkbox.checked) {
+          e.preventDefault();
+          e.stopPropagation();
+          error.style.display = 'block';
+          checkbox.focus();
+          return false;
+        }
+        
+        error.style.display = 'none';
+        
+        // Call original handler if exists
+        if (originalSubmit) {
+          return originalSubmit.call(this, e);
+        }
+      };
+      
+      // Also intercept form submit event
+      signupForm.addEventListener('submit', function(e) {
+        const checkbox = iframeDoc.getElementById('terms-checkbox');
+        const error = iframeDoc.querySelector('.gh-portal-terms-error');
+        
+        if (!checkbox.checked) {
+          e.preventDefault();
+          e.stopPropagation();
+          error.style.display = 'block';
+          checkbox.focus();
+          return false;
+        }
+        
+        error.style.display = 'none';
+      }, true);
+      
+      // Hide error when checkbox is checked
+      const checkbox = iframeDoc.getElementById('terms-checkbox');
+      if (checkbox) {
+        checkbox.addEventListener('change', function() {
+          const error = iframeDoc.querySelector('.gh-portal-terms-error');
+          if (this.checked) {
+            error.style.display = 'none';
+          }
+        });
+      }
+      
+    } catch (err) {
+      console.log('Terms injection error:', err);
+    }
+  }
+})();
+</script>

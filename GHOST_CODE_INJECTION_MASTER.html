@@ -1,0 +1,116 @@
+<!-- ============================================
+     GHOST CODE INJECTION MASTER
+     Sections for Site Header, Site Footer, and Terms Page
+     Last updated: Jan 2, 2026
+     ============================================ -->
+
+<!-- ========== SECTION 1: SITE HEADER ========== 
+     Location: Ghost Admin → Settings → Code injection → Site Header
+     Purpose: Hide Ghost branding + Make Terms & Conditions text a clickable link
+-->
+<style>
+  .gh-powered-by, a[href="https://ghost.org/"], a[href*="ghost.org"] { display: none !important; }
+</style>
+
+<script>
+  const observer = new MutationObserver(() => {
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return;
+        
+        // Find all labels
+        const labels = doc.querySelectorAll('label');
+        labels.forEach(label => {
+          // Check if this is the agreement checkbox
+          if (label.querySelector('input[type="checkbox"]') && label.textContent.includes('agree')) {
+            // Get the current text
+            const text = label.textContent;
+            
+            // Only modify if it hasn't been done yet
+            if (!label.querySelector('a[href="/terms-and-conditions/"]')) {
+              // Replace "Terms & Conditions" with a link
+              label.innerHTML = label.innerHTML.replace(
+                'Terms & Conditions',
+                '<a href="/terms-and-conditions/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: underline;">Terms & Conditions</a>'
+              );
+            }
+          }
+        });
+        
+      } catch (err) {}
+    });
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
+</script>
+
+<!-- ========== SECTION 2: SITE FOOTER ========== 
+     Location: Ghost Admin → Settings → Code injection → Site Footer
+     Purpose: Replace footer copyright
+-->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Replace footer copyright
+    const footer = document.querySelector('.gh-footer-copyright');
+    if (footer) {
+      footer.innerHTML = '© 2026 EquityMantraa';
+    }
+  });
+</script>
+
+<!-- ========== SECTION 4: EMBED SIGNUP FORM CODE INJECTION ========== 
+     Location: Ghost Admin → Membership → Embed signup form → Copy the embed code + modify it
+     Purpose: Add checkbox + hyperlink to the embed signup form
+     
+     HOW TO USE:
+     1. Go to Ghost Admin → Membership → Embed signup form
+     2. Copy the provided embed code
+     3. Paste it on your website/page
+     4. Add this script AFTER the embed code to inject the checkbox
+-->
+<script>
+  // Inject checkbox into Ghost Portal embed form
+  document.addEventListener('DOMContentLoaded', function() {
+    // Watch for Portal iframe
+    const observer = new MutationObserver(() => {
+      const iframe = document.querySelector('iframe[src*="cdn.jsdelivr.net/ghost"]');
+      if (!iframe) return;
+      
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return;
+        
+        const form = doc.querySelector('form');
+        if (!form || form.querySelector('[name="terms"]')) return;
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (!submitBtn) return;
+        
+        // Create checkbox
+        const checkbox = doc.createElement('div');
+        checkbox.style.cssText = 'margin: 15px 0; padding: 12px; background: #f9f9f9; border-radius: 4px; border-left: 3px solid #667eea;';
+        checkbox.innerHTML = `
+          <label style="display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="terms" required style="margin-top: 3px; cursor: pointer;">
+            <span>I agree to the <a href="/terms-and-conditions/" target="_blank" style="color: #667eea; font-weight: bold; text-decoration: underline;">Terms & Conditions</a></span>
+          </label>
+        `;
+        
+        submitBtn.parentNode.insertBefore(checkbox, submitBtn);
+        
+        // Validate on submit
+        form.addEventListener('submit', function(e) {
+          const cb = form.querySelector('input[name="terms"]');
+          if (cb && !cb.checked) {
+            e.preventDefault();
+            alert('Please accept the Terms & Conditions');
+          }
+        }, true);
+      } catch (err) {}
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+</script>
